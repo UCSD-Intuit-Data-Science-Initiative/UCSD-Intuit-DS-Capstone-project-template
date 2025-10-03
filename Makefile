@@ -1,6 +1,23 @@
-.PHONY: help install lint format test docs clean precommit
+.PHONY: help install lint format test docs-up docs-down docs-logs docs-check docs-build docs-ps clean precommit
 
 POETRY ?= poetry
+
+PODMAN_BIN := $(shell command -v podman 2>/dev/null)
+PODMAN_COMPOSE_BIN := $(shell command -v podman-compose 2>/dev/null)
+DOCKER_BIN := $(shell command -v docker 2>/dev/null)
+
+ifeq ($(strip $(PODMAN_BIN)),)
+    CONTAINER_ENGINE := docker
+    COMPOSE_CMD := docker compose
+else
+    CONTAINER_ENGINE := podman
+    ifneq ($(strip $(PODMAN_COMPOSE_BIN)),)
+        COMPOSE_CMD := podman-compose
+    else
+        COMPOSE_CMD := podman compose
+    endif
+endif
+
 .DEFAULT_GOAL := help
 
 
@@ -23,8 +40,27 @@ test: ## Execute test suite via tox (py)
 	$(POETRY) run tox -e py
 
 ##@Documentation
-docs: ## Build documentation (placeholder)
-	@echo "Docs target pending documentation tooling"
+docs-up: ## Serve documentation stack using container runtime
+	$(COMPOSE_CMD) up --detach --build
+
+docs-down: ## Stop documentation container stack
+	$(COMPOSE_CMD) down --remove-orphans
+
+docs-logs: ## Tail documentation service logs
+	$(COMPOSE_CMD) logs -f jekyll
+
+docs-check: ## Run link checker via lychee container
+	$(COMPOSE_CMD) run --rm lychee
+
+docs-build: ## Build static documentation site inside container
+	$(COMPOSE_CMD) run --rm jekyll-build
+
+docs-ps: ## Show status of documentation containers
+	$(COMPOSE_CMD) ps
+
+docs-open: ## Open the local documentation site in your default browser
+	@ $(POETRY) run python -c "import webbrowser; webbrowser.open('http://localhost:4000')"
+
 
 ##@Pipelines
 pipeline-run: ## Execute sample training pipeline

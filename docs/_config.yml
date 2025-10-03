@@ -1,0 +1,10 @@
+title: Python Data Science Template
+description: UCSD Intuit Capstone scaffold
+theme: minima
+markdown: kramdown
+header_pages:
+  - overview.md
+  - data.md
+  - modeling.md
+  - results.md
+  - tech_stack.md

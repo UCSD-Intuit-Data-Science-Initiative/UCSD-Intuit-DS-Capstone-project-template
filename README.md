@@ -71,6 +71,13 @@ Poetry 1.8+ is required. If Poetry is not already installed, follow the [officia
 | Demo pipeline | `make pipeline-run` | Executes `scripts/run_pipeline.py --demo` |
 | Pipeline help | `make pipeline-help` | Shows CLI options for pipeline script |
 | Clean caches | `make clean` | Removes tox caches, coverage files, build artefacts |
+| Serve docs stack | `make docs-up` | Builds containers and serves docs (Podman if available) |
+| Stop docs stack | `make docs-down` | Stops containers and removes orphans |
+| Inspect docs status | `make docs-ps` | Shows running docs services |
+| Tail docs logs | `make docs-logs` | Streams Jekyll container logs |
+| Build docs static site | `make docs-build` | Runs Jekyll build inside container |
+| Check doc links | `make docs-check` | Runs lychee link checker in container |
+| Open docs in browser | `make docs-open` | Launches `http://localhost:4000` locally |
 
 ## 5. Makefile Cheatsheet
 
@@ -89,7 +96,11 @@ The `Makefile` is your command dashboard. Every target includes a description su
 - `make pipeline-help` – displays CLI usage for the pipeline script.
 
 ### Documentation
-- `make docs` – placeholder for future documentation builds.
+- `make docs-up` – start the containerised docs stack (Podman preferred, Docker fallback).
+- `make docs-down` – stop containers and clean up.
+- `make docs-build` – perform a one-off Jekyll build inside the container.
+- `make docs-check` – run lychee link checking against the generated site.
+- `make docs-open` – open the served docs in your default browser.
 
 ### Maintenance
 - `make clean` – orchestrates clean-pyc, clean-build, clean-test, clean-cache.
@@ -191,9 +202,25 @@ pytest tests/unit/test_modeling.py -k linear
 ## 12. Documentation
 
 - `docs/` contains:
-  - `_config.yml` for Jekyll/GitHub Pages.
-  - `index.md` and `action_plan.md` as starting pages.
-- Host documentation via GitHub Pages by pointing to the `/docs` folder in repository settings.
+  - `_config.yml` for Jekyll/GitHub Pages configuration.
+  - Markdown pages (`index.md`, `overview.md`, `data.md`, etc.) that serve as a project handbook.
+  - A dedicated `Gemfile` / `Gemfile.lock` that mirrors the reference implementation.
+- Preview the docs with the containerised workflow (preferred):
+  1. Ensure either Podman (with podman-compose) or Docker Desktop is installed. The Makefile automatically picks Podman when available, otherwise falls back to Docker.
+  2. `make docs-up`
+  3. Optionally open a browser tab with `make docs-open` (site served at `http://localhost:4000`).
+  4. Watch live logs via `make docs-logs`.
+  5. When finished, `make docs-down`.
+- Additional docs tooling:
+  - `make docs-build` – run a one-off Jekyll build into `docs/_site` inside the container.
+  - `make docs-ps` – inspect the running services (useful when debugging).
+  - `make docs-check` – run the lychee link checker against the generated site.
+- Prefer local Ruby? Use the gems pinned in `docs/Gemfile`:
+  1. `cd docs`
+  2. `bundle install`
+  3. `bundle exec jekyll serve --livereload`
+  4. Visit `http://localhost:4000`
+- Push changes to publish via GitHub Pages (set the Pages source to `/docs`).
 
 ## 13. Logging
 
