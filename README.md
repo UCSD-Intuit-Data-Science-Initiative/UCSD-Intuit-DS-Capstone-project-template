@@ -2,6 +2,25 @@
 
 Welcome! This repository is a ready-to-use scaffold for UCSD Intuit Data Science Capstone projects. The goal is to minimize setup friction so you can concentrate on experimentation, modelling, and storytelling. This document walks you through how the template is organised and how to work with it day-to-day.
 
+## Table of Contents
+
+1. [Quickstart](#1-quickstart)
+2. [Repository Layout](#2-repository-layout)
+3. [Tooling Highlights](#3-tooling-highlights)
+4. [Common Commands](#4-common-commands)
+5. [Makefile Cheatsheet](#5-makefile-cheatsheet)
+6. [Getting Started (Detailed)](#5-getting-started-detailed)
+7. [Working with the Package (`src/main_module`)](#6-working-with-the-package-srcmain_module)
+8. [Example Usage](#7-example-usage)
+9. [Data & Notebook Practices](#8-data--notebook-practices)
+10. [Pipelines & Scripts](#9-pipelines--scripts)
+11. [Testing Strategy](#10-testing-strategy)
+12. [Linting, Formatting & Pre-commit Hooks](#11-linting-formatting--pre-commit-hooks)
+13. [Documentation Workflow](#12-documentation-workflow)
+14. [Logging](#13-logging)
+15. [Best Practices & Next Steps](#14-best-practices--next-steps)
+16. [Need Help?](#15-need-help)
+
 ## 1. Quickstart
 
 ```bash
@@ -199,28 +218,43 @@ pytest tests/unit/test_modeling.py -k linear
 - Formatting also uses Ruff; no separate Black/isort configuration is required (and Ruff enforces import style automatically).
 - `.pre-commit-config.yaml` runs Ruff, autoflake, mypy, and whitespace checks. Install hooks once via `make install`, then they’ll run automatically on `git commit`.
 
-## 12. Documentation
+## 12. Documentation Workflow
 
-- `docs/` contains:
-  - `_config.yml` for Jekyll/GitHub Pages configuration.
-  - Markdown pages (`index.md`, `overview.md`, `data.md`, etc.) that serve as a project handbook.
-  - A dedicated `Gemfile` / `Gemfile.lock` that mirrors the reference implementation.
-- Preview the docs with the containerised workflow (preferred):
-  1. Ensure either Podman (with podman-compose) or Docker Desktop is installed. The Makefile automatically picks Podman when available, otherwise falls back to Docker.
-  2. `make docs-up`
-  3. Optionally open a browser tab with `make docs-open` (site served at `http://localhost:4000`).
-  4. Watch live logs via `make docs-logs`.
-  5. When finished, `make docs-down`.
-- Additional docs tooling:
-  - `make docs-build` – run a one-off Jekyll build into `docs/_site` inside the container.
-  - `make docs-ps` – inspect the running services (useful when debugging).
-  - `make docs-check` – run the lychee link checker against the generated site.
-- Prefer local Ruby? Use the gems pinned in `docs/Gemfile`:
-  1. `cd docs`
-  2. `bundle install`
-  3. `bundle exec jekyll serve --livereload`
-  4. Visit `http://localhost:4000`
-- Push changes to publish via GitHub Pages (set the Pages source to `/docs`).
+**Overview**
+- The docs are a Jekyll site using the `just-the-docs/just-the-docs` remote theme.
+- Configuration lives in `docs/_config.yml`; markdown content is under `docs/*.md`.
+- The Makefile targets wrap `podman-compose`/`docker compose` so you rarely need raw container commands.
+
+**Daily editing loop**
+1. Update or add markdown pages in `docs/`.
+2. Adjust front matter (`title`, `nav_order`, `layout`) to control sidebar/nav placement.
+3. Commit changes along with any supporting assets.
+
+**Build without serving**
+- `make docs-build` → runs `bundle exec jekyll build` inside the container, populating `docs/_site/`.
+- Use when you only need a static build (e.g., CI, link checking) or to confirm the site compiles.
+
+**Serve locally (recommended)**
+- `make docs-up` → builds the images (if needed) and starts Jekyll + LiveReload.
+  - Podman is used automatically when present; otherwise Docker Desktop is used.
+  - Logs stream through the Makefile; inspect them via `make docs-logs`.
+- Optional helpers while the stack is running:
+  - `make docs-open` → opens `http://localhost:4000` in your default browser.
+  - `make docs-ps` → shows container status (handy for troubleshooting).
+- To stop everything, run `make docs-down` (also clears orphan containers).
+
+**Link checking**
+- `make docs-check` → executes the lychee link checker in the container against the built site.
+- Review warnings for missing anchors or external resources; adjust `.lycheeignore` when needed.
+
+**Styling and theme tweaks**
+- Update site metadata, header links, or footer text in `docs/_config.yml`.
+- For deeper theme overrides, add Sass or JS under `docs/assets/` following Just the Docs override conventions.
+- The upstream theme emits Sass deprecation warnings; they are harmless but documented so you can track upstream changes.
+
+**Publishing**
+- Push changes to GitHub and set the repository’s Pages source to `/docs` for automatic deployment.
+- Confirm the build in GitHub Pages settings; the Just the Docs theme loads remotely so no extra assets are needed.
 
 ## 13. Logging
 
